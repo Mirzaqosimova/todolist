@@ -80,7 +80,8 @@
     "testEnvironment": "node",
     "moduleNameMapper": {
       "@/(.*)": "<rootDir>/src/$1",
-      "~/(.*)": "<rootDir>/types/$1"
+      "~/(.*)": "<rootDir>/types/$1",
+      "^src/(.*)$": "<rootDir>/../src/$1"
     }
   }
 }

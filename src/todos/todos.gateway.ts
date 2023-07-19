@@ -7,7 +7,6 @@ import {
 import { TodosService } from './todos.service';
 import { CreateAndUpdateTodoDto } from './dto/create-update-todo.dto';
 import { Server } from 'socket.io';
-import { log } from 'console';
 import { UpdateTodoDto } from './dto/update-dto-gateway';
 
 @WebSocketGateway()
@@ -19,8 +18,6 @@ export class TodosGateway {
 
   @SubscribeMessage('createTodo')
   async create(@MessageBody() payload: CreateAndUpdateTodoDto) {
-    log(payload);
-    log(payload.title);
     await this.service.create(payload);
     return this.getAll();
   }

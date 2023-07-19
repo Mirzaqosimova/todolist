@@ -1,63 +1,144 @@
-// import { HttpStatus, INestApplication } from '@nestjs/common';
-// import { Test, TestingModule } from '@nestjs/testing';
-// import { TypeOrmModule } from '@nestjs/typeorm';
-// import { Todo } from 'src/todos/entities/todo.entity';
-// import { TodosModule } from 'src/todos/todos.module';
-// import { TodosService } from 'src/todos/todos.service';
-// import { Repository } from 'typeorm';
-// import * as request from 'supertest';
+import { Test } from '@nestjs/testing';
+import { INestApplication, ValidationPipe } from '@nestjs/common';
+import * as request from 'supertest';
+import { TodosModule } from 'src/todos/todos.module';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { Todo } from 'src/todos/entities/todo.entity';
+import { Repository } from 'typeorm';
 
-// describe('UserController (e2e)', () => {
-//   let userService: TodosService;
-//   let userRepository: Repository<Todo>;
-//   let app: INestApplication;
+describe('AppController (e2e)', () => {
+  let app: INestApplication;
+  let repository: Repository<Todo>;
 
-//   beforeAll(async () => {
-//     const moduleFixture: TestingModule = await Test.createTestingModule({
-//       imports: [
-//         TodosModule,
-//         TypeOrmModule.forRoot({
-//           type: 'postgres',
-//           host: 'localhost',
-//           port: 6379,
-//           username: 'postgres',
-//           password: 'postgres',
-//           database: 'postgres',
-//         }),
-//       ],
-//     }).compile();
+  beforeAll(async () => {
+    const module = await Test.createTestingModule({
+      imports: [
+        TodosModule,
+        TypeOrmModule.forRoot({
+          type: 'postgres',
+          host: 'localhost',
+          port: 6379,
+          username: 'postgres',
+          password: 'postgres',
+          database: 'postgres',
+          entities: [Todo],
+          synchronize: false,
+        }),
+      ],
+    }).compile();
 
-//     app = moduleFixture.createNestApplication();
-//     await app.init();
-//     userRepository = moduleFixture.get('UserRepository');
-//     userService = new TodosService(userRepository);
-//   });
+    app = module.createNestApplication();
+    repository = module.get('TodoRepository');
+    await repository.clear();
+    app.useGlobalPipes(new ValidationPipe());
+    await app.init();
+  });
 
-//   afterAll(async () => {
-//     await app.close();
-//   });
+  afterAll(async () => {
+    await app.close();
+  });
 
-//   afterEach(async () => {
-//     await userRepository.query('DELETE FROM users');
-//   });
+  //   beforeAll(async () => {
+  //     const moduleFixture: TestingModule = await Test.createTestingModule({
+  //       imports: [AppModule],
+  //     }).compile()
 
-//   it('[POST] /user : Response is OK if conditions are right', async () => {
-//     const dto = {
-//       title: 'ssss',
-//       status: 'in_progress',
-//     };
+  //     app = moduleFixture.createNestApplication()
+  //     await app.init()
 
-//     await request(app.getHttpServer())
-//       .post('/todos')
-//       .send(JSON.stringify(dto))
-//       .expect({ status: HttpStatus.CREATED })
-//       .expect((response: request.Response) => {
-//         expect(typeof response.body).toBe('object');
-//         const payload = response.body;
-//         expect(typeof payload.id).toBe('number'),
-//           expect(typeof payload.created_at).toBe('date'),
-//           expect(payload.title).toEqual(dto.title),
-//           expect(payload.status).toEqual(dto.status);
-//       });
-//   });
-// });
+  //     // tip: access the database connection via
+  //     // const connection = app.get(Connection)
+  //     // const a = connection.manager
+  //   })
+
+  //   afterAll(async () => {
+  //     await Promise.all([
+  //       app.close(),
+  //     ])
+  //   })
+
+  let id = '';
+
+  describe('Todos create', () => {
+    describe('create', () => {
+      it('authenticates user with valid credentials and provides a jwt token', async () => {
+        const response = await request(app.getHttpServer())
+          .post('/todos')
+          .send({
+            title: 'blabla',
+            status: 'in_progress',
+          })
+          .expect(201);
+        id = response.body.id;
+      });
+      it('should be conflict create new country', () => {
+        return request(app.getHttpServer())
+          .post('/todos')
+          .send({
+            title: 'blabla',
+            status: 'in_progress',
+          })
+          .set('Accept', 'application/json')
+          .expect(409);
+      });
+
+      it('should be bad request', () => {
+        return request(app.getHttpServer())
+          .post('/todos')
+          .set('Accept', 'application/json')
+          .send({
+            title: 4,
+          })
+          .expect(400);
+      });
+    });
+  });
+
+  describe('Todos update', () => {
+    describe('update', () => {
+      it('authenticates user with valid credentials and provides a jwt token', async () => {
+        await request(app.getHttpServer())
+          .put(`/todos/${id}`)
+          .send({
+            title: 'my todo',
+            status: 'in_progress',
+          })
+          .expect(200);
+      });
+      it('should be conflict create new country', () => {
+        return request(app.getHttpServer())
+          .put(`/todos/${id}`)
+          .send({
+            title: 'my todo',
+            status: 'in_progress',
+          })
+          .expect(409);
+      });
+
+      it('should be bad request', () => {
+        return request(app.getHttpServer())
+          .post('/todos')
+          .set('Accept', 'application/json')
+          .send({
+            title: 4,
+          })
+          .expect(400);
+      });
+    });
+  });
+
+  describe('Todos get one', () => {
+    describe('update', () => {
+      it('authenticates user with valid credentials and provides a jwt token', async () => {
+        await request(app.getHttpServer())
+          .get(`/todos/${id}`)
+          .expect(200)
+          .expect((response: request.Response) => {
+            expect(typeof response.body).toBe('object');
+            const payload = response.body;
+            expect(payload.id).toEqual(id);
+          });
+      });
+    });
+  });
+});
