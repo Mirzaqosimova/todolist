@@ -1,12 +1,9 @@
-import { nanoid } from 'nanoid';
 import { TodoStatus } from '../../enums/Todo-enums';
 import { Column, CreateDateColumn, Entity, PrimaryColumn } from 'typeorm';
-const id = nanoid().toString();
 
 @Entity('todo')
 export class Todo {
-  @PrimaryColumn({ unique: true, primary: true, default: id })
-  //    @PrimaryGeneratedColumn('uuid')
+  @PrimaryColumn({ unique: true, primary: true })
   id: string;
 
   @Column()
@@ -26,4 +23,10 @@ export class Todo {
 
   @Column({ default: false })
   is_delete: boolean;
+
+  constructor(id, title, status) {
+    this.id = id;
+    this.title = title;
+    this.status = status;
+  }
 }

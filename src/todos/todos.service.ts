@@ -7,6 +7,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Todo } from './entities/todo.entity';
 import { Repository } from 'typeorm';
 import { CreateAndUpdateTodoDto } from './dto/create-update-todo.dto';
+import { nanoid } from 'nanoid';
 
 @Injectable()
 export class TodosService {
@@ -23,7 +24,8 @@ export class TodosService {
     if (isExists) {
       throw new ConflictException('This title already exists');
     }
-    return this.todoRepository.save({ ...createTodoDto });
+    const data = new Todo(nanoid(), createTodoDto.title, createTodoDto.status);
+    return this.todoRepository.save(data);
   }
 
   async findAll() {
