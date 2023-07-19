@@ -5,6 +5,7 @@ import { TodosModule } from 'src/todos/todos.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Todo } from 'src/todos/entities/todo.entity';
 import { Repository } from 'typeorm';
+import { testTypeOrmConfig } from 'test/utils/db';
 
 describe('AppController (e2e)', () => {
   let app: INestApplication;
@@ -12,19 +13,7 @@ describe('AppController (e2e)', () => {
 
   beforeAll(async () => {
     const module = await Test.createTestingModule({
-      imports: [
-        TodosModule,
-        TypeOrmModule.forRoot({
-          type: 'postgres',
-          host: 'localhost',
-          port: 6379,
-          username: 'postgres',
-          password: 'postgres',
-          database: 'postgres',
-          entities: [Todo],
-          synchronize: false,
-        }),
-      ],
+      imports: [TodosModule, TypeOrmModule.forRoot(testTypeOrmConfig)],
     }).compile();
 
     app = module.createNestApplication();

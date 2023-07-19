@@ -1,8 +1,10 @@
 import { TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { Todo } from 'src/todos/entities/todo.entity';
-import { DB_USER, DB_PASSWORD, DB_NAME, DB_HOST, DB_PORT } from './env';
+import * as dotenv from 'dotenv';
 
-export const typeOrmConfig: TypeOrmModuleOptions = {
+dotenv.config();
+const { DB_NAME, DB_USER, DB_PASSWORD, DB_PORT, DB_HOST } = process.env;
+export const testTypeOrmConfig: TypeOrmModuleOptions = {
   name: 'default',
   type: 'postgres',
   host: DB_HOST,
