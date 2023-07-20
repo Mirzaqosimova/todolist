@@ -7,7 +7,7 @@ import { Todo } from 'src/todos/entities/todo.entity';
 import { Repository } from 'typeorm';
 import { testTypeOrmConfig } from 'test/utils/db';
 
-describe('AppController (e2e)', () => {
+describe('TodoController (e2e)', () => {
   let app: INestApplication;
   let repository: Repository<Todo>;
 
@@ -18,39 +18,20 @@ describe('AppController (e2e)', () => {
 
     app = module.createNestApplication();
     repository = module.get('TodoRepository');
-    await repository.clear();
     app.useGlobalPipes(new ValidationPipe());
     await app.init();
   });
 
+  let id = '';
+
   afterAll(async () => {
+    await repository.delete({ id });
     await app.close();
   });
 
-  //   beforeAll(async () => {
-  //     const moduleFixture: TestingModule = await Test.createTestingModule({
-  //       imports: [AppModule],
-  //     }).compile()
-
-  //     app = moduleFixture.createNestApplication()
-  //     await app.init()
-
-  //     // tip: access the database connection via
-  //     // const connection = app.get(Connection)
-  //     // const a = connection.manager
-  //   })
-
-  //   afterAll(async () => {
-  //     await Promise.all([
-  //       app.close(),
-  //     ])
-  //   })
-
-  let id = '';
-
   describe('Todos create', () => {
     describe('create', () => {
-      it('authenticates user with valid credentials and provides a jwt token', async () => {
+      it('Create todos', async () => {
         const response = await request(app.getHttpServer())
           .post('/todos')
           .send({
@@ -60,7 +41,7 @@ describe('AppController (e2e)', () => {
           .expect(201);
         id = response.body.id;
       });
-      it('should be conflict create new country', () => {
+      it('should be conflict create new todo', () => {
         return request(app.getHttpServer())
           .post('/todos')
           .send({
@@ -85,7 +66,7 @@ describe('AppController (e2e)', () => {
 
   describe('Todos update', () => {
     describe('update', () => {
-      it('authenticates user with valid credentials and provides a jwt token', async () => {
+      it('update todos', async () => {
         await request(app.getHttpServer())
           .put(`/todos/${id}`)
           .send({
@@ -94,7 +75,7 @@ describe('AppController (e2e)', () => {
           })
           .expect(200);
       });
-      it('should be conflict create new country', () => {
+      it('should be conflict create update todo', () => {
         return request(app.getHttpServer())
           .put(`/todos/${id}`)
           .send({
@@ -118,7 +99,7 @@ describe('AppController (e2e)', () => {
 
   describe('Todos get one', () => {
     describe('update', () => {
-      it('authenticates user with valid credentials and provides a jwt token', async () => {
+      it('get one todo', async () => {
         await request(app.getHttpServer())
           .get(`/todos/${id}`)
           .expect(200)
@@ -127,6 +108,14 @@ describe('AppController (e2e)', () => {
             const payload = response.body;
             expect(payload.id).toEqual(id);
           });
+      });
+    });
+  });
+
+  describe('Todos delete', () => {
+    describe('update', () => {
+      it('Delete todo', async () => {
+        await request(app.getHttpServer()).delete(`/todos/${id}`).expect(200);
       });
     });
   });
